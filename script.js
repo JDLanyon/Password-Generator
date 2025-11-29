@@ -8,9 +8,94 @@ const sliderValue = document.querySelector(".slider-value");
 
 const passwordOptionsContainer = document.querySelector(".password-options");
 
+const generateButton = document.querySelector("button");
+
+const generatedPassword = document.querySelector(".generated-password");
+
+// Checkboxes
+const checkedUppercase = document.getElementById("includesUppercase");
+
+const checkedLowercase = document.getElementById("includesLowercase");
+
+const checkedNumbers = document.getElementById("includesNumbers");
+
+const checkedSymbols = document.getElementById("includesSymbols");
+
+// Clipboard
+const clipBoard = document.getElementById("clipboard");
+const strengthDivs = document.querySelectorAll(".strength");
 let currentStrength = 4;
 
-//validation object
+const root = document.querySelector(":root");
+root.style.setProperty("--slider-percentage", "50%");
+
+function calcPercentage(current) {
+  const p = (100 / 20) * current;
+  console.log(p);
+  root.style.setProperty("--slider-percentage", `${p}%`);
+}
+function sliderValueChange(value) {
+  sliderValue.textContent = value;
+}
+//current - strength
+
+const passwordStrength = document.querySelector(".password-strength");
+console.log(passwordStrength);
+
+updateStrengthMeter(currentStrength);
+
+const passwordConditions = {
+  includesUppercase: true,
+  includesLowercase: true,
+  includesNumbers: true,
+  includesSymbols: true,
+
+  //lets create a function that determines how many are true
+
+  getNumberOfTrue: function () {
+    let numberOfTrue = 0;
+    Object.values(this).forEach((value) => {
+      if (value === true) {
+        numberOfTrue += 1;
+      }
+    });
+    return numberOfTrue;
+  },
+};
+
+const passwordConditionsFunction = {
+  includesUppercase: function (value) {
+    let characters = "";
+    for (let i = 1; i <= value; i++) {
+      characters += String.fromCharCode(randomASCII(90, 65));
+    }
+    return characters;
+  },
+  includesLowercase: function (value) {
+    let characters = "";
+    for (let i = 1; i <= value; i++) {
+      characters += String.fromCharCode(randomASCII(122, 97));
+    }
+    return characters;
+  },
+
+  includesNumbers: function (value) {
+    let characters = "";
+    for (let i = 1; i <= value; i++) {
+      characters += String.fromCharCode(randomASCII(57, 48));
+    }
+    return characters;
+  },
+
+  includesSymbols: function (value) {
+    let characters = "";
+    for (let i = 1; i <= value; i++) {
+      characters += String.fromCharCode(randomASCII(47, 33));
+    }
+
+    return characters;
+  },
+};
 
 const validation = {
   //checks if string has uppercase letter
@@ -19,20 +104,44 @@ const validation = {
   includesNumbers: (value) => /[0-9]/.test(value),
   includesSymbols: (value) => /[-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/]/.test(value),
 };
-//return validation[key(value)]
-// console.log(validation["includesSymbols"]("AB123"));
 
-function sliderValueChange(value) {
-  sliderValue.textContent = value;
+function populateCharacters(length) {
+  //populatedString
+  let populatedString = "";
+  const trueConditions = passwordConditions.getNumberOfTrue();
+
+  let numberOfCharactersPer = Math.floor(length / trueConditions);
+
+  let remainder = length % trueConditions;
+
+  const totalChracters = length;
+
+  Object.keys(passwordConditions).forEach((key) => {
+    if (passwordConditions[key] === true) {
+      populatedString += passwordConditionsFunction[key](
+        numberOfCharactersPer + remainder
+      );
+      remainder = 0;
+    }
+  });
+
+  return shuffleString(populatedString);
+}
+
+function shuffleString(passwordString) {
+  let shuffleArr = passwordString.split("");
+
+  //I need to figure out how sort works
+  return shuffleArr.sort((a, b) => 0.5 - Math.random()).join("");
 }
 
 function boxChecked(value) {
-  value ? currentStrength++ : currentStrength--;
-  console.log(`Current Strength is: ${currentStrength}`);
-}
+  passwordConditions[value.id] = value.checked;
 
-function generatePassword(length) {
-  //length = the length of the string we create
+  console.log(`${value.id} is ${passwordConditions[value.id]}`);
+  value.checked ? currentStrength++ : currentStrength--;
+  updateStrengthMeter(currentStrength);
+  console.log(`Current Strength is: ${currentStrength}`);
 }
 
 function randomASCII(max, min) {
@@ -41,16 +150,73 @@ function randomASCII(max, min) {
 
   return Math.floor(Math.random() * (maxFloor - minCeil) + minCeil);
 }
-//
 
 // 0 - 9 = 48-57
+//numbers
 randomASCII(57, 48);
 
 //A-Z = 65 - 90
+//uppercase
 randomASCII(90, 65);
 
 //a - z = 97 - 122
+//lowercase
 randomASCII(122, 97);
+
+//special characters
+randomASCII(47, 33);
+
+// Event Listeners
+
+generateButton.addEventListener("click", (e) => {
+  e.preventDefault;
+  generatedPassword.textContent = populateCharacters(sliderValue.textContent);
+});
+
+clipBoard.addEventListener("click", () =>
+  copyToClipboard(generatedPassword.textContent)
+);
+
+async function copyToClipboard(text) {
+  const type = "text/plain";
+
+  const clipBoardItemdata = {
+    [type]: text,
+  };
+
+  const clipboardItem = new ClipboardItem(clipBoardItemdata);
+
+  await navigator.clipboard.write([clipboardItem]);
+  generatedPassword.style.color = "green";
+}
+
+function updateStrengthMeter(value) {
+  for (let i = 0; i <= strengthDivs.length - 1; i++) {
+    strengthDivs[i].classList.remove("current-strength");
+  }
+  for (let i = 0; i <= value - 1; i++) {
+    strengthDivs[i].classList.add("current-strength");
+  }
+
+  switch (value - 1) {
+    case 0:
+      passwordStrength.textContent = "Weak";
+      break;
+    case 1:
+      passwordStrength.textContent = "Good";
+      break;
+    case 2:
+      passwordStrength.textContent = "Strong";
+      break;
+    case 3:
+      passwordStrength.textContent = "Excellent";
+      break;
+
+    default:
+      console.log("how");
+      break;
+  }
+}
 
 // ASCII TABLE
 /*
@@ -140,8 +306,4 @@ $	36	dollar sign
 .	46	period
 /	47	slash
 
-{	123	left curly brace
-|	124	vertical bar
-}	125	right curly brace
-~	126	tilde
  */

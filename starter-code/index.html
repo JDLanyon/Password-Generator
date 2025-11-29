@@ -27,7 +27,7 @@
       <!-- --------------------------------------------------- -->
       <div class="generated-password-container">
         <h2 class="generated-password">P4$5W0rD!</h2>
-        <img src="/assets/images/icon-copy.svg" alt="" />
+        <img src="/assets/images/icon-copy.svg" alt="" id="clipboard" />
       </div>
 
       <div class="generated-password-options-container">
@@ -42,34 +42,40 @@
             max="20"
             value="10"
             id="password-slider"
-            oninput="sliderValueChange(this.value)"
+            oninput="sliderValueChange(this.value); calcPercentage(this.value);"
           />
         </div>
         <div class="password-options">
           <label class="container">
             <input
               type="checkbox"
-              checked=""
-              oninput="boxChecked(this.checked)"
+              checked="checked"
+              oninput="boxChecked(this)"
+              id="includesUppercase"
             />
+            <label for="" id="labelcheck"></label>
             Include Uppercase Letters
           </label>
 
           <label class="container">
             <input
               type="checkbox"
-              checked=""
-              oninput="boxChecked(this.checked)"
+              checked="checked"
+              oninput="boxChecked(this)"
+              id="includesLowercase"
             />
+            <label for="" id="labelcheck"></label>
             Include Lowercase Letters
           </label>
 
           <label class="container">
             <input
               type="checkbox"
-              checked=""
-              oninput="boxChecked(this.checked)"
+              checked="checked"
+              oninput="boxChecked(this)"
+              id="includesNumbers"
             />
+            <label for="" id="labelcheck"></label>
             Include Numbers
           </label>
 
@@ -77,14 +83,16 @@
             <input
               type="checkbox"
               checked=""
-              oninput="boxChecked(this.checked)"
+              oninput="boxChecked(this)"
+              id="includesSymbols"
             />
+            <label for="" id="labelcheck"></label>
             Include Symbols
           </label>
         </div>
         <div>
           <div class="password-strength-container">
-            <h2>strength</h2>
+            <h2 class="strength-label">strength</h2>
             <div class="password-strength-meter">
               <h2 class="password-strength">medium</h2>
               <div class="strength strength-1"></div>
